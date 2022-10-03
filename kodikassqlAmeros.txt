@@ -1,0 +1,566 @@
+
+CREATE TABLE film (
+  film_id SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
+  title VARCHAR(128) NOT NULL,
+  description TEXT DEFAULT NULL,
+  release_year YEAR(4) DEFAULT NULL,
+  language_id TINYINT(3) UNSIGNED NOT NULL,
+  original_language_id TINYINT(3) UNSIGNED DEFAULT NULL,
+  length SMALLINT(5) UNSIGNED DEFAULT NULL,
+  rating ENUM('G','PG','PG-13','R','NC-17') DEFAULT 'G',
+  special_features SET('Trailers','Commentaries','Deleted Scenes','Behind the Scenes') DEFAULT NULL,
+  PRIMARY KEY  (film_id),
+  CONSTRAINT fk_film_language FOREIGN KEY (language_id) REFERENCES language (language_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_film_language_original FOREIGN KEY (original_language_id) REFERENCES language (language_id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+---------
+CREATE TABLE actor (
+  actor_id SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
+  first_name VARCHAR(45) NOT NULL,
+  last_name VARCHAR(45) NOT NULL,
+  PRIMARY KEY  (actor_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+--
+-- Table structure for table `country`
+--
+
+CREATE TABLE country (
+  country_id SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
+  country VARCHAR(50) NOT NULL,
+  PRIMARY KEY  (country_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+--
+-- Table structure for table `city`
+--
+
+CREATE TABLE city (
+  city_id SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
+  city VARCHAR(50) NOT NULL,
+  country_id SMALLINT(5) UNSIGNED NOT NULL,
+  PRIMARY KEY  (city_id),
+  CONSTRAINT `fk_city_country` FOREIGN KEY (country_id) REFERENCES country (country_id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+
+--
+-- Table structure for table `address`
+--
+
+CREATE TABLE address (
+  address_id SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
+  address VARCHAR(50) NOT NULL,
+  district VARCHAR(20) DEFAULT NULL,
+  city_id SMALLINT(5) UNSIGNED NOT NULL,
+  postal_code VARCHAR(10) DEFAULT NULL,
+  phone VARCHAR(20) NOT NULL,
+  PRIMARY KEY  (address_id),
+  CONSTRAINT `fk_address_city` FOREIGN KEY (city_id) REFERENCES city (city_id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `category`
+--
+
+CREATE TABLE category (
+  category_id TINYINT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(25) NOT NULL,
+  PRIMARY KEY  (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+--
+-- Table structure for table `language`
+--
+
+CREATE TABLE language (
+  language_id TINYINT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
+  name CHAR(20) NOT NULL,
+  PRIMARY KEY (language_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+
+------------------------------
+CREATE TABLE Administrator (
+  id smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  first_name varchar(45) NOT NULL,
+  last_name varchar(45) NOT NULL,
+  email varchar(50) NOT NULL,
+  create_date datetime NOT NULL,
+  address_id smallint(5) unsigned NOT NULL,
+  PRIMARY KEY (id),
+  KEY address_id (address_id),
+  CONSTRAINT Administrator_ibfk_1 FOREIGN KEY (address_id) REFERENCES address (address_id) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+
+
+CREATE TABLE Employee (
+  employee_id smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  first_name varchar(45) NOT NULL,
+  last_name varchar(45) NOT NULL,
+  email varchar(50) NOT NULL,
+  create_date datetime NOT NULL,
+  address_id smallint(5) unsigned NOT NULL,
+  PRIMARY KEY (employee_id),
+  KEY address_id (address_id),
+  CONSTRAINT Employee_ibfk_1 FOREIGN KEY (address_id) REFERENCES address (address_id) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
+
+3. Series
+
+CREATE TABLE Series (
+  series_id smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  title varchar(128) NOT NULL,
+  description text DEFAULT NULL,
+  language_id tinyint(3) unsigned DEFAULT NULL,
+  original_language_id tinyint(3) unsigned DEFAULT NULL,
+  release_year year(4) DEFAULT NULL,
+  special_features set('Trailers','Commentaries','Deleted Scenes','Behind the Scenes') DEFAULT NULL,
+  rating enum('G','PG','PG-13','R','NC-17') DEFAULT NULL,
+  number_of_seasons smallint(5) NOT NULL,
+  PRIMARY KEY (series_id),
+  KEY language_id (language_id),
+  KEY original_language_id (original_language_id),
+  CONSTRAINT Series_ibfk_1 FOREIGN KEY (language_id) REFERENCES language (language_id) ON UPDATE CASCADE,
+  CONSTRAINT Series_ibfk_2 FOREIGN KEY (original_language_id) REFERENCES language (language_id) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8mb4;
+
+4. series_inventory
+
+CREATE TABLE series_inventory (
+  inventory_id mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  series_id smallint(5) unsigned NOT NULL,
+  PRIMARY KEY (inventory_id),
+  KEY series_id (series_id),
+  CONSTRAINT series_inventory_ibfk_1 FOREIGN KEY (series_id) REFERENCES Series (series_id) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=412 DEFAULT CHARSET=utf8mb4;
+
+5. series_rental
+
+CREATE TABLE series_rental (
+  rental_id int(11) NOT NULL AUTO_INCREMENT,
+  rental_date datetime NOT NULL,
+  inventory_id mediumint(8) unsigned NOT NULL,
+  customer_id smallint(5) unsigned NOT NULL,
+  episode smallint(5) NOT NULL,
+  created_by varchar(50) DEFAULT NULL,
+  updated_by varchar(50) DEFAULT NULL,
+  PRIMARY KEY (rental_id),
+  KEY customer_id (customer_id),
+  KEY inventory_id (inventory_id),
+  CONSTRAINT series_rental_ibfk_1 FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON UPDATE CASCADE,
+  CONSTRAINT series_rental_ibfk_2 FOREIGN KEY (inventory_id) REFERENCES series_inventory (inventory_id) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=301 DEFAULT CHARSET=utf8mb4;
+	
+6. payment_series
+
+CREATE TABLE payment_series (
+  payment_id smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  customer_id smallint(5) unsigned NOT NULL,
+  rental_id int(11) DEFAULT NULL,
+  amount decimal(5,2) NOT NULL,
+  payment_date datetime NOT NULL,
+  created_by varchar(50) DEFAULT NULL,
+  updated_by varchar(50) DEFAULT NULL,
+  PRIMARY KEY (payment_id),
+  KEY fk_payment_rental2 (rental_id),
+  KEY fk_payment_customer2 (customer_id),
+  CONSTRAINT fk_payment_customer2 FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON UPDATE CASCADE,
+  CONSTRAINT fk_payment_rental2 FOREIGN KEY (rental_id) REFERENCES series_rental (rental_id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8mb4;
+
+7. film_inventory
+
+CREATE TABLE film_inventory (
+  inventory_id mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  film_id smallint(5) unsigned NOT NULL,
+  PRIMARY KEY (inventory_id),
+  KEY film_id (film_id),
+  CONSTRAINT film_inventory_ibfk_1 FOREIGN KEY (film_id) REFERENCES film (film_id) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3975 DEFAULT CHARSET=utf8mb4;
+
+8. film_rental
+
+CREATE TABLE film_rental (
+  rental_id int(11) NOT NULL AUTO_INCREMENT,
+  rental_date datetime NOT NULL,
+  inventory_id mediumint(8) unsigned NOT NULL,
+  customer_id smallint(5) unsigned NOT NULL,
+  created_by varchar(50) DEFAULT NULL,
+  updated_by varchar(50) DEFAULT NULL,
+  PRIMARY KEY (rental_id),
+  KEY customer_id (customer_id),
+  KEY inventory_id (inventory_id),
+  CONSTRAINT film_rental_ibfk_1 FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON UPDATE CASCADE,
+  CONSTRAINT film_rental_ibfk_2 FOREIGN KEY (inventory_id) REFERENCES film_inventory (inventory_id) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=11061 DEFAULT CHARSET=utf8mb4;
+
+
+9. payment_film
+
+CREATE TABLE payment_film (
+  payment_id smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  customer_id smallint(5) unsigned NOT NULL,
+  rental_id int(11) DEFAULT NULL,
+  amount decimal(5,2) NOT NULL,
+  payment_date datetime NOT NULL,
+  created_by varchar(50) DEFAULT NULL,
+  updated_by varchar(50) DEFAULT NULL,
+  PRIMARY KEY (payment_id),
+  KEY fk_payment_rental (rental_id),
+  KEY fk_payment_customer (customer_id),
+  CONSTRAINT fk_payment_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON UPDATE CASCADE,
+  CONSTRAINT fk_payment_rental FOREIGN KEY (rental_id) REFERENCES film_rental (rental_id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4;
+
+10. Logs
+
+CREATE TABLE Logs (
+  logid smallint(5) NOT NULL AUTO_INCREMENT,
+  username varchar(50) NOT NULL,
+  dateofevent datetime NOT NULL,
+  successfull tinyint(1) NOT NULL,
+  typos enum('Eisagogi','Enimerosi','Diagrafi') DEFAULT NULL,
+  pinakas varchar(45) NOT NULL,
+  PRIMARY KEY (logid)
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4;
+
+11. season
+
+CREATE TABLE season (
+  season_id smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  id_series smallint(5) unsigned NOT NULL,
+  release_year year(4) DEFAULT NULL,
+  number_of_episodes smallint(5) NOT NULL,
+  PRIMARY KEY (season_id),
+  KEY id_series (id_series),
+  CONSTRAINT season_ibfk_1 FOREIGN KEY (id_series) REFERENCES Series (series_id) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4;
+
+12. film_category
+
+CREATE TABLE film_category (
+  film_id smallint(5) unsigned NOT NULL,
+  category_id tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (film_id,category_id),
+  KEY fk_film_category_category (category_id),
+  CONSTRAINT fk_film_category_category FOREIGN KEY (category_id) REFERENCES category (category_id) ON UPDATE CASCADE,
+  CONSTRAINT fk_film_category_film FOREIGN KEY (film_id) REFERENCES film (film_id) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+13. series_category
+
+CREATE TABLE series_category (
+  series_id smallint(5) unsigned NOT NULL,
+  category_id tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (series_id,category_id),
+  KEY category_id (category_id),
+  CONSTRAINT series_category_ibfk_1 FOREIGN KEY (series_id) REFERENCES Series (series_id) ON UPDATE CASCADE,
+  CONSTRAINT series_category_ibfk_2 FOREIGN KEY (category_id) REFERENCES category (category_id) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+14. film_actor
+
+CREATE TABLE film_actor (
+  actor_id smallint(5) unsigned NOT NULL,
+  film_id smallint(5) unsigned NOT NULL,
+  PRIMARY KEY (actor_id,film_id),
+  KEY fk_film_actor_film (film_id),
+  CONSTRAINT fk_film_actor_actor FOREIGN KEY (actor_id) REFERENCES actor (actor_id) ON UPDATE CASCADE,
+  CONSTRAINT fk_film_actor_film FOREIGN KEY (film_id) REFERENCES film (film_id) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+15. series_actor
+
+CREATE TABLE series_actor (
+  actor_id smallint(5) unsigned NOT NULL,
+  series_id smallint(5) unsigned NOT NULL,
+  PRIMARY KEY (actor_id,series_id),
+  KEY series_id (series_id),
+  CONSTRAINT series_actor_ibfk_1 FOREIGN KEY (actor_id) REFERENCES actor (actor_id) ON UPDATE CASCADE,
+  CONSTRAINT series_actor_ibfk_2 FOREIGN KEY (series_id) REFERENCES Series (series_id) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+----------------------
+Stored Procedures:
+CREATE  PROCEDURE N_th_most_rentals(IN option CHAR(1),IN orio INT(5),IN first DATE,IN second DATE)
+BEGIN
+IF option='m' THEN
+ SELECT film_id,count(film_id) as TOTAL FROM film_rental INNER JOIN film_inventory ON film_rental.inventory_id=film_inventory.inventory_id
+ WHERE DATE(rental_date) BETWEEN first AND second
+ GROUP BY film_id ORDER BY TOTAL DESC LIMIT orio;
+ELSEIF option='s' THEN
+ SELECT series_id,count(series_id) as TOTAL FROM series_rental INNER JOIN series_inventory ON series_rental.inventory_id=series_inventory.inventory_id
+  WHERE DATE(rental_date) BETWEEN first AND second
+ GROUP BY series_id ORDER BY TOTAL DESC LIMIT orio; 
+ END IF;
+END$
+--------------------
+CREATE  PROCEDURE Number_of_rentals(IN mail VARCHAR(50),IN imerominia DATE)
+BEGIN
+DECLARE id SMALLINT(5);
+DECLARE sub_type ENUM('Film','Series','Both');
+DECLARE sum1 INT;
+DECLARE sum2 INT;
+SELECT customer_id INTO id from customer where email=mail;
+SELECT subscription_type INTO sub_type from customer where email=mail;
+ IF sub_type='Film' THEN
+  SELECT COUNT(*) FROM film_rental WHERE DATE(rental_date)=imerominia AND customer_id=id;
+ ELSEIF sub_type='Series' THEN
+ SELECT COUNT(*) FROM series_rental WHERE DATE(rental_date)=imerominia AND customer_id=id;
+ ELSE
+ SELECT COUNT(*) INTO sum1  FROM film_rental WHERE DATE(rental_date)=imerominia AND customer_id=id;
+ SELECT COUNT(*) INTO sum2 FROM series_rental WHERE DATE(rental_date)=imerominia AND customer_id=id;
+ SELECT sum1 as count_of_film_rentals;
+ SELECT sum2 as count_of_series_rentals;
+ SELECT sum1+sum2 as all_rentals;
+ END IF;
+END$ 
+-------------------------------------
+CREATE  PROCEDURE Monthly_revenue()
+BEGIN
+SELECT year(payment_date) as Year,month(payment_date) as Month ,sum(amount) as Film_revenue
+FROM payment_film  GROUP BY year(payment_date),month(payment_date)
+ORDER BY year(payment_date),month(payment_date);
+SELECT year(payment_date) as Year,month(payment_date) as Month,sum(amount) as Series_revenue
+FROM payment_series  GROUP BY year(payment_date),month(payment_date)
+ORDER BY year(payment_date),month(payment_date);
+END$
+----------------------------------
+CREATE  PROCEDURE Find_Actors(IN first VARCHAR(45),IN second VARCHAR(45))
+BEGIN
+DECLARE count INT(5);
+SELECT first_name,last_name FROM actor WHERE last_name BETWEEN first AND second;
+SELECT count(actor_id) INTO count FROM actor WHERE last_name BETWEEN first AND second;
+SELECT count;
+END$
+-------------------------------
+CREATE  PROCEDURE Find_Actor(IN input VARCHAR(45))
+BEGIN
+DECLARE g INT(5);
+SELECT first_name ,last_name FROM actor WHERE last_name=input;
+SELECT count(actor_id) INTO g FROM actor WHERE last_name=input;
+SELECT g;
+END$
+-----------------------
+Index:
+CREATE INDEX indx_actor ON actor(last_name);
+------------------------------------------
+Triggers:
+
+
+CREATE TRIGGER after_payment_film
+AFTER INSERT ON payment_film
+FOR EACH ROW
+BEGIN
+INSERT INTO Logs(username,dateofevent,successfull,typos,pinakas) VALUES(NEW.created_by,NOW(),1,'Eisagogi','payment_film');
+END$
+
+
+
+CREATE TRIGGER after_payment_series
+AFTER INSERT ON payment_series
+FOR EACH ROW
+BEGIN
+INSERT INTO Logs(username,dateofevent,successfull,typos,pinakas) VALUES(NEW.created_by,NOW(),1,'Eisagogi','payment_series');
+END$
+
+
+
+
+CREATE TRIGGER cost_series
+AFTER INSERT ON series_rental
+FOR EACH ROW
+BEGIN
+DECLARE plithos1 INT;
+DECLARE plithos2 INT;
+DECLARE sub_type ENUM('Film','Series','Both');
+ SELECT subscription_type INTO sub_type FROM customer WHERE customer.customer_id=NEW.customer_id;
+ IF (sub_type='Series') THEN
+     SELECT COUNT(*) INTO plithos1 FROM series_rental WHERE customer_id=NEW.customer_id AND DATE(rental_date)=DATE(NEW.rental_date);
+  IF (plithos1%3=0) THEN
+       INSERT INTO payment_series(customer_id,rental_id,amount,payment_date,created_by) VALUES(NEW.customer_id,NEW.rental_id,0.1,NEW.rental_date,NEW.created_by);
+     ELSE 
+       INSERT INTO payment_series(customer_id,rental_id,amount,payment_date,created_by) VALUES(NEW.customer_id,NEW.rental_id,0.2,NEW.rental_date,NEW.created_by);
+     END IF;
+ ELSEIF (sub_type='Both') THEN
+     SELECT COUNT(*) INTO plithos1 FROM film_rental WHERE customer_id=NEW.customer_id AND DATE(rental_date)=DATE(NEW.rental_date);
+     SELECT COUNT(*) INTO plithos2 FROM series_rental WHERE customer_id=NEW.customer_id AND DATE(rental_date)=DATE(NEW.rental_date);
+     IF ((plithos1+plithos2)%3=0) THEN
+         INSERT INTO payment_series(customer_id,rental_id,amount,payment_date,created_by) VALUES(NEW.customer_id,NEW.rental_id,0.05,NEW.rental_date,NEW.created_by);
+     ELSE
+         INSERT INTO payment_series(customer_id,rental_id,amount,payment_date,created_by) VALUES(NEW.customer_id,NEW.rental_id,0.1,NEW.rental_date,NEW.created_by);
+     END IF;       
+ END IF;
+ INSERT INTO Logs(username,dateofevent,successfull,typos,pinakas) VALUES(NEW.created_by,NOW(),1,'Eisagogi','series_rental');
+END$
+
+
+
+CREATE TRIGGER cost_Film
+AFTER INSERT ON film_rental
+FOR EACH ROW
+BEGIN
+DECLARE plithos1 INT;
+DECLARE plithos2 INT;
+DECLARE sub_type ENUM('Film','Series','Both');
+ SELECT subscription_type INTO sub_type FROM customer WHERE customer.customer_id=NEW.customer_id;
+ IF (sub_type='Film') THEN
+     SELECT COUNT(*) INTO plithos1 FROM film_rental WHERE customer_id=NEW.customer_id AND DATE(rental_date)=DATE(NEW.rental_date);
+  IF (plithos1%3=0) THEN
+       INSERT INTO payment_film(customer_id,rental_id,amount,payment_date,created_by) VALUES(NEW.customer_id,NEW.rental_id,0.2,NEW.rental_date,NEW.created_by);
+     ELSE 
+       INSERT INTO payment_film(customer_id,rental_id,amount,payment_date,created_by) VALUES(NEW.customer_id,NEW.rental_id,  0.4,NEW.rental_date,NEW.created_by);
+     END IF;
+ ELSEIF (sub_type='Both') THEN
+     SELECT COUNT(*) INTO plithos1 FROM film_rental WHERE customer_id=NEW.customer_id AND DATE(rental_date)=DATE(NEW.rental_date);
+     SELECT COUNT(*) INTO plithos2 FROM series_rental WHERE customer_id=NEW.customer_id AND DATE(rental_date)=DATE(NEW.rental_date);
+     IF ((plithos1+plithos2)%3=0) THEN
+         INSERT INTO payment_film(customer_id,rental_id,amount,payment_date,created_by) VALUES(NEW.customer_id,NEW.rental_id,0.15,NEW.rental_date,NEW.created_by);
+     ELSE
+         INSERT INTO payment_film(customer_id,rental_id,amount,payment_date,created_by) VALUES(NEW.customer_id,NEW.rental_id,0.3,NEW.rental_date,NEW.created_by);
+     END IF;       
+ END IF;
+ INSERT INTO Logs(username,dateofevent,successfull,typos,pinakas) VALUES(NEW.created_by,NOW(),1,'Eisagogi','film_rental');
+END$
+
+CREATE TRIGGER after_update_series_rental
+AFTER UPDATE ON series_rental
+FOR EACH ROW
+BEGIN 
+INSERT INTO Logs(username,dateofevent,successfull,typos,pinakas) VALUES(NEW.updated_by,NOW(),1,'Enimerosi','series_rental');
+END$
+
+CREATE TRIGGER after_update_film_rental
+AFTER UPDATE ON film_rental
+FOR EACH ROW
+BEGIN 
+INSERT INTO Logs(username,dateofevent,successfull,typos,pinakas) VALUES(NEW.updated_by,NOW(),1,'Enimerosi','film_rental');
+END$
+
+CREATE TRIGGER after_update_payment_series
+AFTER UPDATE ON payment_series
+FOR EACH ROW
+BEGIN
+INSERT INTO Logs(username,dateofevent,successfull,typos,pinakas) VALUES(NEW.updated_by,NOW(),1,'Enimerosi','payment_series');
+END$
+
+CREATE TRIGGER after_update_payment_film
+AFTER UPDATE ON payment_film
+FOR EACH ROW
+BEGIN
+INSERT INTO Logs(username,dateofevent,successfull,typos,pinakas) VALUES(NEW.updated_by,NOW(),1,'Enimerosi','payment_film');
+END$
+
+CREATE TRIGGER Forbid_user_edit
+BEFORE UPDATE ON customer
+FOR EACH ROW
+BEGIN
+DECLARE xristis VARCHAR(50);
+SELECT email INTO xristis FROM customer WHERE customer_id=OLD.customer_id;
+IF(NEW.updated_by!=xristis AND (SELECT EXISTS(SELECT * FROM Employee where email=NEW.updated_by))=0 AND (SELECT EXISTS(SELECT * FROM Administrator where email=NEW.updated_by))=0) THEN
+    SIGNAL SQLSTATE VALUE '45000'
+    SET MESSAGE_TEXT='You cannot alter this customers info because you are either another customer or you dont exist!';
+END IF;
+IF (NEW.updated_by=xristis AND (SELECT EXISTS(SELECT * FROM Employee where email=NEW.updated_by))=0 AND (SELECT EXISTS(SELECT * FROM Administrator where email=NEW.updated_by))=0 ) THEN
+        IF ((NEW.email!=OLD.email OR NEW.customer_id!=OLD.customer_id OR NEW.create_date!=OLD.create_date)) THEN
+           SIGNAL SQLSTATE VALUE '45000'
+           SET MESSAGE_TEXT=' You cannot alter data you have no access to!';
+        END IF;
+ELSEIF  (NEW.updated_by!=xristis AND (SELECT EXISTS(SELECT * FROM Employee where email=NEW.updated_by))=1 AND (SELECT EXISTS(SELECT * FROM Administrator where email=NEW.updated_by))=0) THEN
+              IF ((NEW.email!=OLD.email)) THEN
+                  SIGNAL SQLSTATE VALUE '45000'
+                  SET MESSAGE_TEXT=' You cannot alter data you have no access to!';
+              END IF;
+ELSEIF (NEW.updated_by=xristis AND (SELECT EXISTS(SELECT * FROM Employee where email=NEW.updated_by))=1 AND (SELECT EXISTS(SELECT * FROM Administrator where email=NEW.updated_by))=0) THEN
+               IF ((NEW.email!=OLD.email)) THEN
+                  SIGNAL SQLSTATE VALUE '45000'
+                  SET MESSAGE_TEXT=' You cannot alter data you have no access to!';
+               END IF;
+END IF;      
+END$
+
+CREATE TRIGGER Forbid_film
+BEFORE INSERT ON film_rental
+FOR EACH ROW
+BEGIN
+ DECLARE extra VARCHAR(50);
+ DECLARE elenxos VARCHAR(50);
+ DECLARE sub_type ENUM('Film','Series','Both');
+ SELECT email INTO elenxos FROM customer WHERE customer_id=NEW.customer_id;
+ SELECT subscription_type INTO sub_type FROM customer WHERE customer.customer_id=NEW.customer_id;
+ IF sub_type='Series' THEN
+ SIGNAL SQLSTATE VALUE '45000'
+ SET MESSAGE_TEXT='You cannot rent a film if you dont have a film or both subscription!';
+ END IF;
+ SELECT email INTO extra FROM customer WHERE customer_id=NEW.customer_id;
+ IF ((SELECT EXISTS(SELECT * FROM Employee where email=NEW.created_by))=0 AND (SELECT EXISTS(SELECT * FROM Administrator where              email=NEW.created_by))=0 AND (NEW.created_by!=extra)) THEN
+        SIGNAL SQLSTATE VALUE '45000'
+        SET MESSAGE_TEXT='You cannot rent a film for another person if you are not an Admin or an Employee!';
+ END IF;
+END$
+CREATE TRIGGER Forbid_payment_film
+BEFORE INSERT ON payment_film
+FOR EACH ROW
+BEGIN
+DECLARE sub_type ENUM('Film','Series','Both');
+ SELECT subscription_type INTO sub_type FROM customer WHERE customer.customer_id=NEW.customer_id;
+ IF sub_type='Series' THEN
+ SIGNAL SQLSTATE VALUE '45000'
+ SET MESSAGE_TEXT='You cannot pay for films  if your subscription is : series only';
+ END IF;
+ 
+END$
+ CREATE TRIGGER Forbid_payment_series
+BEFORE INSERT ON payment_series
+FOR EACH ROW
+BEGIN
+DECLARE sub_type ENUM('Film','Series','Both');
+ SELECT subscription_type INTO sub_type FROM customer WHERE customer.customer_id=NEW.customer_id;
+ IF sub_type='Film' THEN
+ SIGNAL SQLSTATE VALUE '45000'
+ SET MESSAGE_TEXT='You cannot pay for series  if your subscription is : Film only!';
+ END IF;
+END$
+
+CREATE TRIGGER Forbid_series
+BEFORE INSERT ON series_rental
+FOR EACH ROW
+BEGIN
+DECLARE xristis VARCHAR(50);
+DECLARE epeisodia SMALLINT(5);
+DECLARE proto SMALLINT(5);
+DECLARE sub_type ENUM('Film','Series','Both');
+ SELECT subscription_type INTO sub_type FROM customer WHERE customer.customer_id=NEW.customer_id;
+ SELECT email INTO xristis FROM customer WHERE customer_id=NEW.customer_id;
+ IF sub_type='Film' THEN
+ SIGNAL SQLSTATE VALUE '45000'
+ SET MESSAGE_TEXT='You cannot rent series if you dont have a series or both subscription!';
+ END IF;
+SET proto=0;
+SET epeisodia=0;
+SELECT series_id into proto from series_inventory where inventory_id=NEW.inventory_id;
+select sum(number_of_episodes) into epeisodia from season where id_series=proto;
+ IF NEW.episode>epeisodia THEN
+ SIGNAL SQLSTATE VALUE '45000'
+ SET MESSAGE_TEXT='The epeisode you are trying to rent doesnt exist!';
+ END IF;
+ SET epeisodia=0;
+IF ((SELECT EXISTS(SELECT * FROM Employee where email=NEW.created_by))=0 AND (SELECT EXISTS(SELECT * FROM Administrator where                   email=NEW.created_by))=0 AND (NEW.created_by!=xristis)) THEN
+        SIGNAL SQLSTATE VALUE '45000'
+        SET MESSAGE_TEXT='You cannot rent a series episode for another person if you are not an Admin or an Employee!';
+ END IF;
+END$
