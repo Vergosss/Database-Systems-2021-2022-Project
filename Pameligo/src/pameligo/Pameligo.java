@@ -2,14 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package pameligo;
+package Tv_On_Demand;
 import java.sql.*;
 import javax.swing.*;
 /**
  *
  * @author vergman
  */
-public class Pameligo {
+public class Tv_On_Demand {
 private static final String DB_URL = "jdbc:mariadb://localhost:3306/neo";
     /**
      * @param args the command line arguments
